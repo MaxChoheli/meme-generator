@@ -1,0 +1,27 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: darkslategray;
+    padding: 20px;
+    text-align: center;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+}
+
+.gallery,
+.editor {
+    background-color: gray;
+    min-height: 300px;
+    border: 2px dashed lightgray;
+}

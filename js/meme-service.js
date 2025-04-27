@@ -5,7 +5,7 @@ var gMeme = {
     selectedLineIdx: 0,
     lines: [
         {
-            txt: 'gimme a meme',
+            txt: 'Your Meme Text',
             size: 30,
             color: 'white'
         }
@@ -18,4 +18,8 @@ function getMeme() {
 
 function setLineTxt(txt) {
     gMeme.lines[gMeme.selectedLineIdx].txt = txt
+}
+
+function setImg(imgId) {
+    gMeme.selectedImgId = imgId
 }

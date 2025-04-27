@@ -25,3 +25,7 @@ main {
     min-height: 300px;
     border: 2px dashed lightgray;
 }
+
+.hidden {
+    display: none;
+}

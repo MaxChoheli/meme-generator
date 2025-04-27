@@ -1,5 +1,7 @@
 'use strict'
 
+var gIsEditorOpen = false
+
 function renderMeme() {
     const meme = getMeme()
     const canvas = document.getElementById('meme-canvas')
@@ -24,6 +26,25 @@ function onTxtInput(ev) {
     renderMeme()
 }
 
+function onImgSelect(imgId) {
+    setImg(imgId)
+    renderMeme()
+
+    if (!gIsEditorOpen) {
+        document.querySelector('.gallery').classList.add('hidden')
+        document.querySelector('.editor').classList.remove('hidden')
+        gIsEditorOpen = true
+    }
+}
+
+function onBackToGallery() {
+    document.querySelector('.editor').classList.add('hidden')
+    document.querySelector('.gallery').classList.remove('hidden')
+    gIsEditorOpen = false
+}
+
+renderGallery()
 renderMeme()
 
 document.getElementById('txt-input').addEventListener('input', onTxtInput)
+document.getElementById('btn-back').addEventListener('click', onBackToGallery)

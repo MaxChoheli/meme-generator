@@ -22,10 +22,62 @@ main {
 .gallery,
 .editor {
     background-color: gray;
-    min-height: 300px;
     border: 2px dashed lightgray;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.gallery img {
+    width: 250px;
+    max-width: 90%;
+    margin: 10px auto;
+    display: block;
+    cursor: pointer;
+    border: 2px solid white;
+    border-radius: 10px;
+}
+
+canvas {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    background-color: black;
+    display: block;
+    margin: 0 auto;
+}
+
+#txt-input,
+#btn-back {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: darkslategray;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+#txt-input::placeholder {
+    color: lightgray;
 }
 
 .hidden {
     display: none;
+}
+
+@media (max-width: 600px) {
+    header {
+        font-size: 18px;
+    }
+
+    #txt-input,
+    #btn-back {
+        font-size: 14px;
+    }
+
+    main {
+        padding: 10px;
+    }
 }

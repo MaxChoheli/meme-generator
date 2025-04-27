@@ -11,6 +11,9 @@ function renderMeme() {
     img.src = `gallery/${meme.selectedImgId}.jpg`
 
     img.onload = () => {
+        canvas.width = img.width
+        canvas.height = img.height
+
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
         const line = meme.lines[meme.selectedLineIdx]

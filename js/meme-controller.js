@@ -11,8 +11,9 @@ function renderMeme() {
     img.src = `gallery/${meme.selectedImgId}.jpg`
 
     img.onload = () => {
-        canvas.width = img.width
-        canvas.height = img.height
+        const fixedCanvasWidth = 400
+        canvas.width = fixedCanvasWidth
+        canvas.height = (img.height * fixedCanvasWidth) / img.width
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
@@ -46,8 +47,17 @@ function onBackToGallery() {
     gIsEditorOpen = false
 }
 
+function onDownloadMeme() {
+    const canvas = document.getElementById('meme-canvas')
+    const link = document.createElement('a')
+    link.href = canvas.toDataURL('image/jpeg')
+    link.download = 'my-meme.jpg'
+    link.click()
+}
+
 renderGallery()
 renderMeme()
 
 document.getElementById('txt-input').addEventListener('input', onTxtInput)
 document.getElementById('btn-back').addEventListener('click', onBackToGallery)
+document.getElementById('btn-download').addEventListener('click', onDownloadMeme)

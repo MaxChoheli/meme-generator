@@ -7,12 +7,18 @@ var gMeme = {
         {
             txt: 'Your Meme Text',
             size: 30,
-            color: 'white'
+            color: 'white',
+            pos: { x: 0, y: 50 },
+            width: 0,
+            height: 0
         },
         {
             txt: 'Bottom Text',
             size: 30,
-            color: 'white'
+            color: 'white',
+            pos: { x: 0, y: 0 },
+            width: 0,
+            height: 0
         }
     ]
 }
@@ -41,7 +47,10 @@ function addLine() {
     gMeme.lines.push({
         txt: 'New Line',
         size: 30,
-        color: 'white'
+        color: 'white',
+        pos: { x: 0, y: 0 },
+        width: 0,
+        height: 0
     })
     gMeme.selectedLineIdx = gMeme.lines.length - 1
 }

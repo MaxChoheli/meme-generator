@@ -79,7 +79,14 @@ function onAddLine() {
 function onSwitchLine() {
     switchLine()
     const meme = getMeme()
-    document.getElementById('txt-input').value = meme.lines[meme.selectedLineIdx].txt
+    document.getElementById('txt-input').value = meme.lines[meme.selectedLineIdx]?.txt || ''
+    renderMeme()
+}
+
+function onRemoveLine() {
+    removeSelectedLine()
+    const meme = getMeme()
+    document.getElementById('txt-input').value = meme.lines[meme.selectedLineIdx]?.txt || ''
     renderMeme()
 }
 
@@ -140,4 +147,5 @@ document.getElementById('btn-increase-font').addEventListener('click', onIncreas
 document.getElementById('btn-decrease-font').addEventListener('click', onDecreaseFont)
 document.getElementById('btn-add-line').addEventListener('click', onAddLine)
 document.getElementById('btn-switch-line').addEventListener('click', onSwitchLine)
+document.getElementById('btn-remove-line').addEventListener('click', onRemoveLine)
 document.getElementById('meme-canvas').addEventListener('click', onCanvasClick)

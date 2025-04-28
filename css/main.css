@@ -19,8 +19,11 @@ main {
     padding: 20px;
 }
 
-.gallery,
-.editor {
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
     background-color: gray;
     border: 2px dashed lightgray;
     padding: 20px;
@@ -28,13 +31,23 @@ main {
 }
 
 .gallery img {
-    width: 250px;
-    max-width: 90%;
-    margin: 10px auto;
-    display: block;
-    cursor: pointer;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
     border: 2px solid white;
     border-radius: 10px;
+    cursor: pointer;
+}
+
+.editor {
+    background-color: gray;
+    border: 2px dashed lightgray;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 }
 
 canvas {
@@ -42,25 +55,60 @@ canvas {
     max-width: 400px;
     height: auto;
     background-color: black;
-    display: block;
-    margin: 0 auto;
 }
 
 #txt-input,
+#btn-increase-font,
+#btn-decrease-font,
+#btn-add-line,
+#btn-switch-line,
+#btn-remove-line,
+#btn-download,
 #btn-back {
-    display: block;
     width: 100%;
-    margin-top: 10px;
+    max-width: 400px;
     padding: 10px;
     font-size: 16px;
-    background-color: darkslategray;
-    color: white;
     border: none;
     border-radius: 5px;
+    background-color: darkslategray;
+    color: white;
 }
 
-#txt-input::placeholder {
-    color: lightgray;
+#color-picker {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: darkslategray;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.color-label {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.controls-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.font-size-controls,
+.line-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
 }
 
 .hidden {
@@ -69,15 +117,20 @@ canvas {
 
 @media (max-width: 600px) {
     header {
-        font-size: 18px;
-    }
-
-    #txt-input,
-    #btn-back {
-        font-size: 14px;
+        font-size: 20px;
     }
 
     main {
         padding: 10px;
+    }
+
+    #txt-input,
+    button {
+        font-size: 14px;
+    }
+
+    .gallery img {
+        width: 140px;
+        height: 140px;
     }
 }

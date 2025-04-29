@@ -151,3 +151,22 @@ button {
         height: 140px;
     }
 }
+
+#font-picker {
+    font-size: 16px;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: darkslategray;
+    color: white;
+    border: none;
+    border-radius: 5px;
+}
+
+.align-controls,
+.move-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+}

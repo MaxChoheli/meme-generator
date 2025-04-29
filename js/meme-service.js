@@ -8,6 +8,8 @@ var gMeme = {
             txt: 'Your Meme Text',
             size: 30,
             color: 'white',
+            font: 'Impact',
+            align: 'center',
             pos: { x: 0, y: 50 },
             width: 0,
             height: 0
@@ -16,6 +18,8 @@ var gMeme = {
             txt: 'Bottom Text',
             size: 30,
             color: 'white',
+            font: 'Impact',
+            align: 'center',
             pos: { x: 0, y: 0 },
             width: 0,
             height: 0
@@ -48,6 +52,8 @@ function addLine() {
         txt: 'New Line',
         size: 30,
         color: 'white',
+        font: 'Impact',
+        align: 'center',
         pos: { x: 0, y: 0 },
         width: 0,
         height: 0
@@ -64,4 +70,14 @@ function removeSelectedLine() {
     if (!gMeme.lines.length) return
     gMeme.lines.splice(gMeme.selectedLineIdx, 1)
     if (gMeme.selectedLineIdx >= gMeme.lines.length) gMeme.selectedLineIdx = gMeme.lines.length - 1
+}
+
+function setFont(font) {
+    gMeme.lines[gMeme.selectedLineIdx].font = font
+}
+
+function moveLine(dx, dy) {
+    const line = gMeme.lines[gMeme.selectedLineIdx]
+    line.pos.x += dx
+    line.pos.y += dy
 }

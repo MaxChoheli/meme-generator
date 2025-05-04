@@ -111,7 +111,6 @@ function onRemoveLine() {
 function onImgSelect(imgId) {
     setImg(imgId)
     renderMeme()
-
     if (!gIsEditorOpen) {
         document.querySelector('.gallery').classList.add('hidden')
         document.querySelector('.editor').classList.remove('hidden')
@@ -129,7 +128,6 @@ function onDownloadMeme() {
     const meme = getMeme()
     const selectedIdx = meme.selectedLineIdx
     meme.selectedLineIdx = -1
-
     renderMeme()
 
     setTimeout(() => {
@@ -138,7 +136,6 @@ function onDownloadMeme() {
         link.href = canvas.toDataURL('image/jpeg')
         link.download = 'my-meme.jpg'
         link.click()
-
         meme.selectedLineIdx = selectedIdx
         renderMeme()
     }, 100)
@@ -263,7 +260,6 @@ function onFlexibleMeme() {
     gMeme.selectedLineIdx = 0
 
     renderMeme()
-
     if (!gIsEditorOpen) {
         document.querySelector('.gallery').classList.add('hidden')
         document.querySelector('.editor').classList.remove('hidden')
@@ -271,8 +267,53 @@ function onFlexibleMeme() {
     }
 }
 
+function renderSavedMemes() {
+    const memes = getSavedMemes()
+    const elList = document.querySelector('.saved-list')
+    const elSection = document.querySelector('.saved-memes')
+
+    if (!memes.length) {
+        elSection.classList.add('hidden')
+        return
+    }
+
+    elSection.classList.remove('hidden')
+    elList.innerHTML = ''
+
+    memes.forEach(meme => {
+        const canvas = document.createElement('canvas')
+        canvas.width = 100
+        canvas.height = 100
+        const ctx = canvas.getContext('2d')
+
+        const img = new Image()
+        img.src = `gallery/${meme.selectedImgId}.jpg`
+
+        img.onload = () => {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+            meme.lines.forEach(line => {
+                ctx.font = '12px Impact'
+                ctx.fillStyle = 'white'
+                ctx.textAlign = 'center'
+                ctx.fillText(line.txt, canvas.width / 2, 20 + 20 * meme.lines.indexOf(line))
+            })
+        }
+
+        canvas.addEventListener('click', () => {
+            gMeme = structuredClone(meme)
+            renderMeme()
+            document.querySelector('.gallery').classList.add('hidden')
+            document.querySelector('.editor').classList.remove('hidden')
+            gIsEditorOpen = true
+        })
+
+        elList.appendChild(canvas)
+    })
+}
+
 renderGallery()
 renderMeme()
+renderSavedMemes()
 
 document.getElementById('txt-input').addEventListener('input', onTxtInput)
 document.getElementById('btn-back').addEventListener('click', onBackToGallery)
@@ -283,7 +324,6 @@ document.getElementById('btn-decrease-font').addEventListener('click', onDecreas
 document.getElementById('btn-add-line').addEventListener('click', onAddLine)
 document.getElementById('btn-switch-line').addEventListener('click', onSwitchLine)
 document.getElementById('btn-remove-line').addEventListener('click', onRemoveLine)
-document.getElementById('meme-canvas').addEventListener('click', onCanvasClick)
 document.getElementById('font-picker').addEventListener('change', ev => {
     setFont(ev.target.value)
     renderMeme()
@@ -296,6 +336,17 @@ document.querySelectorAll('.align-controls button').forEach(btn => {
 })
 document.addEventListener('keydown', onKeyMove)
 document.getElementById('btn-flexible').addEventListener('click', onFlexibleMeme)
+document.getElementById('btn-save').addEventListener('click', () => {
+    saveMeme()
+    renderSavedMemes()
+})
+document.getElementById('filter-input').addEventListener('input', ev => {
+    renderGallery(ev.target.value)
+})
+document.getElementById('btn-clear-filter').addEventListener('click', () => {
+    document.getElementById('filter-input').value = ''
+    renderGallery()
+})
 
 const canvas = document.getElementById('meme-canvas')
 canvas.addEventListener('mousedown', onStartDrag)

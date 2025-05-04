@@ -9,19 +9,35 @@
 
 <body>
     <header>
-        <h1>Meme Generator</h1>
+        <h1 style="text-align: left;">Meme Generator</h1>
     </header>
 
     <main>
         <section class="gallery-actions">
             <button id="btn-flexible">I'm Flexible</button>
+            <input id="filter-input" list="tag-options" placeholder="Search by tag">
+            <datalist id="tag-options">
+                <option value="trump">
+                <option value="dog">
+                <option value="baby">
+                <option value="cat">
+                <option value="aliens">
+                <option value="gatsby">
+                <option value="putin">
+                <option value="buzz">
+                <option value="batman">
+                <option value="crying-jordan">
+                <option value="harambe">
+                <option value="padme">
+                    <!-- more optional keywords -->
+            </datalist>
+            <button id="btn-clear-filter">Clear Filter</button>
         </section>
 
         <section class="gallery"></section>
 
         <section class="editor hidden">
             <canvas id="meme-canvas"></canvas>
-
             <input id="txt-input" type="text" placeholder="Enter meme text">
 
             <div class="controls-group">
@@ -54,8 +70,14 @@
                 <button id="btn-remove-line">Remove Line</button>
             </div>
 
+            <button id="btn-save">Save Meme</button>
             <button id="btn-download">Download Meme</button>
             <button id="btn-back">Back to Gallery</button>
+        </section>
+
+        <section class="saved-memes hidden">
+            <h2>Saved Memes</h2>
+            <div class="saved-list"></div>
         </section>
     </main>
 

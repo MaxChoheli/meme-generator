@@ -85,3 +85,23 @@ function moveLine(dx, dy) {
     line.pos.x += dx
     line.pos.y += dy
 }
+
+function saveMeme() {
+    const meme = structuredClone(getMeme())
+    const memes = loadFromStorage('saved-memes') || []
+    memes.push(meme)
+    saveToStorage('saved-memes', memes)
+}
+
+function getSavedMemes() {
+    return loadFromStorage('saved-memes') || []
+}
+
+function saveToStorage(key, val) {
+    localStorage.setItem(key, JSON.stringify(val))
+}
+
+function loadFromStorage(key) {
+    const val = localStorage.getItem(key)
+    return val ? JSON.parse(val) : null
+}

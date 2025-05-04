@@ -170,3 +170,19 @@ button {
     width: 100%;
     max-width: 400px;
 }
+
+.gallery-actions {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#btn-flexible {
+    background-color: darkorange;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}

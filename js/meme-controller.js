@@ -2,7 +2,7 @@
 
 var gIsEditorOpen = false
 var gIsDragging = false
-var gStartPos
+var gStartPos = null
 
 function renderMeme() {
     const meme = getMeme()
@@ -22,28 +22,44 @@ function renderMeme() {
         meme.lines.forEach((line, idx) => {
             ctx.font = `${line.size}px ${line.font}`
             ctx.fillStyle = line.color
-            ctx.textAlign = 'center'
-
-            let y
-            if (idx === 0) y = 50
-            else if (idx === 1) y = canvas.height - 20
-            else y = canvas.height / 2 + (idx - 2) * 50
+            ctx.textAlign = line.align
 
             if (!line.pos.x) line.pos.x = canvas.width / 2
-            if (!line.pos.y) line.pos.y = y
+            if (!line.pos.y) line.pos.y = 50 + idx * 50
 
-            ctx.fillText(line.txt, line.pos.x, line.pos.y)
+            const maxWidth = canvas.width - 40
+            const words = line.txt.split(' ')
+            const testLine = words.join(' ')
+            const textWidth = ctx.measureText(testLine).width
 
-            const metrics = ctx.measureText(line.txt)
-            line.width = metrics.width
-            line.height = line.size
+            if (textWidth > maxWidth) {
+                let wordY = line.pos.y
+                let maxWordWidth = 0
+                words.forEach(word => {
+                    ctx.fillText(word, line.pos.x, wordY)
+                    const wordWidth = ctx.measureText(word).width
+                    if (wordWidth > maxWordWidth) maxWordWidth = wordWidth
+                    wordY += line.size + 5
+                })
+                line.width = maxWordWidth
+                line.height = (line.size + 5) * words.length
+            } else {
+                ctx.fillText(line.txt, line.pos.x, line.pos.y)
+                line.width = ctx.measureText(line.txt).width
+                line.height = line.size
+            }
 
             if (idx === meme.selectedLineIdx) {
+                let rectX
+                if (line.align === 'left') rectX = line.pos.x - 10
+                else if (line.align === 'right') rectX = line.pos.x - line.width - 10
+                else rectX = line.pos.x - line.width / 2 - 10
+
                 ctx.strokeStyle = 'white'
                 ctx.lineWidth = 2
                 ctx.strokeRect(
-                    line.pos.x - line.width / 2 - 10,
-                    line.pos.y - line.height,
+                    rectX,
+                    line.pos.y - line.size,
                     line.width + 20,
                     line.height + 10
                 )
@@ -110,28 +126,32 @@ function onBackToGallery() {
 }
 
 function onDownloadMeme() {
-    const canvas = document.getElementById('meme-canvas')
-    const link = document.createElement('a')
-    link.href = canvas.toDataURL('image/jpeg')
-    link.download = 'my-meme.jpg'
-    link.click()
+    const meme = getMeme()
+    const selectedIdx = meme.selectedLineIdx
+    meme.selectedLineIdx = -1
+
+    renderMeme()
+
+    setTimeout(() => {
+        const canvas = document.getElementById('meme-canvas')
+        const link = document.createElement('a')
+        link.href = canvas.toDataURL('image/jpeg')
+        link.download = 'my-meme.jpg'
+        link.click()
+
+        meme.selectedLineIdx = selectedIdx
+        renderMeme()
+    }, 100)
 }
 
 function onCanvasClick(ev) {
     const pos = getEvPos(ev)
-    const meme = getMeme()
-    meme.lines.forEach((line, idx) => {
-        const left = line.pos.x - line.width / 2 - 10
-        const right = line.pos.x + line.width / 2 + 10
-        const top = line.pos.y - line.height
-        const bottom = line.pos.y + 10
-
-        if (pos.x >= left && pos.x <= right && pos.y >= top && pos.y <= bottom) {
-            meme.selectedLineIdx = idx
-            document.getElementById('txt-input').value = line.txt
-            renderMeme()
-        }
-    })
+    const clickedLineIdx = getLineClicked(pos)
+    if (clickedLineIdx !== -1) {
+        gMeme.selectedLineIdx = clickedLineIdx
+        document.getElementById('txt-input').value = gMeme.lines[clickedLineIdx].txt
+        renderMeme()
+    }
 }
 
 function onKeyMove(ev) {
@@ -161,6 +181,7 @@ function onStartDrag(ev) {
     gMeme.selectedLineIdx = clickedLineIdx
     gStartPos = pos
     gIsDragging = true
+    document.body.style.cursor = 'grabbing'
 }
 
 function onMoveDrag(ev) {
@@ -175,6 +196,8 @@ function onMoveDrag(ev) {
 
 function onStopDrag() {
     gIsDragging = false
+    gStartPos = null
+    document.body.style.cursor = 'default'
 }
 
 function getEvPos(ev) {
@@ -190,15 +213,62 @@ function getLineClicked(pos) {
     const meme = getMeme()
     for (let i = 0; i < meme.lines.length; i++) {
         const line = meme.lines[i]
-        const left = line.pos.x - line.width / 2 - 10
-        const right = line.pos.x + line.width / 2 + 10
-        const top = line.pos.y - line.height
-        const bottom = line.pos.y + 10
-        if (pos.x >= left && pos.x <= right && pos.y >= top && pos.y <= bottom) {
+        const top = line.pos.y - line.size
+        const bottom = top + line.height
+
+        let rectX
+        if (line.align === 'left') rectX = line.pos.x - 10
+        else if (line.align === 'right') rectX = line.pos.x - line.width - 10
+        else rectX = line.pos.x - line.width / 2 - 10
+
+        const right = rectX + line.width + 20
+
+        if (
+            pos.x >= rectX && pos.x <= right &&
+            pos.y >= top && pos.y <= bottom
+        ) {
             return i
         }
     }
     return -1
+}
+
+function onFlexibleMeme() {
+    const options = [
+        { id: 6, txt: "I'm not saying that it's aliens... but it's aliens." },
+        { id: 8, txt: "Please tell me more, I'm sooooo interested." },
+        { id: 13, txt: "Cheers to you" },
+        { id: 14, txt: "What if I told you" },
+        { id: 15, txt: "One does not simply" },
+        { id: 18, txt: "Coding mistakes, coding mistakes everywhere" },
+        { id: 19, txt: "(Looking for the bug) I will find you, and I will fix you" },
+        { id: 24, txt: "Me with 39°C working on this sprint" },
+        { id: 25, txt: "Me showing up to the hospital still in my pajamas in the morning." },
+        { id: 12, txt: "Guess who's looking at this meme now?" }
+    ]
+
+    const random = options[Math.floor(Math.random() * options.length)]
+    setImg(random.id)
+
+    gMeme.lines = [{
+        txt: random.txt,
+        size: 30,
+        color: 'white',
+        font: 'Impact',
+        align: 'center',
+        pos: { x: 0, y: 50 },
+        width: 0,
+        height: 0
+    }]
+    gMeme.selectedLineIdx = 0
+
+    renderMeme()
+
+    if (!gIsEditorOpen) {
+        document.querySelector('.gallery').classList.add('hidden')
+        document.querySelector('.editor').classList.remove('hidden')
+        gIsEditorOpen = true
+    }
 }
 
 renderGallery()
@@ -218,8 +288,15 @@ document.getElementById('font-picker').addEventListener('change', ev => {
     setFont(ev.target.value)
     renderMeme()
 })
-
+document.querySelectorAll('.align-controls button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        setAlign(btn.dataset.align)
+        renderMeme()
+    })
+})
 document.addEventListener('keydown', onKeyMove)
+document.getElementById('btn-flexible').addEventListener('click', onFlexibleMeme)
+
 const canvas = document.getElementById('meme-canvas')
 canvas.addEventListener('mousedown', onStartDrag)
 canvas.addEventListener('mousemove', onMoveDrag)

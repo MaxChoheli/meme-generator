@@ -76,6 +76,10 @@ function setFont(font) {
     gMeme.lines[gMeme.selectedLineIdx].font = font
 }
 
+function setAlign(align) {
+    gMeme.lines[gMeme.selectedLineIdx].align = align
+}
+
 function moveLine(dx, dy) {
     const line = gMeme.lines[gMeme.selectedLineIdx]
     line.pos.x += dx

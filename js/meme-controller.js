@@ -10,7 +10,8 @@ function renderMeme() {
     const ctx = canvas.getContext('2d')
 
     const img = new Image()
-    img.src = `gallery/${meme.selectedImgId}.jpg`
+    const isUserImg = meme.selectedImgId.toString().startsWith('user-')
+    img.src = isUserImg ? meme.selectedImgId : `gallery/${meme.selectedImgId}.jpg`
 
     img.onload = () => {
         const fixedCanvasWidth = 400
@@ -27,41 +28,24 @@ function renderMeme() {
             if (!line.pos.x) line.pos.x = canvas.width / 2
             if (!line.pos.y) line.pos.y = 50 + idx * 50
 
-            const maxWidth = canvas.width - 40
-            const words = line.txt.split(' ')
-            const testLine = words.join(' ')
-            const textWidth = ctx.measureText(testLine).width
-
-            if (textWidth > maxWidth) {
-                let wordY = line.pos.y
-                let maxWordWidth = 0
-                words.forEach(word => {
-                    ctx.fillText(word, line.pos.x, wordY)
-                    const wordWidth = ctx.measureText(word).width
-                    if (wordWidth > maxWordWidth) maxWordWidth = wordWidth
-                    wordY += line.size + 5
-                })
-                line.width = maxWordWidth
-                line.height = (line.size + 5) * words.length
-            } else {
-                ctx.fillText(line.txt, line.pos.x, line.pos.y)
-                line.width = ctx.measureText(line.txt).width
-                line.height = line.size
-            }
+            const textWidth = ctx.measureText(line.txt).width
+            ctx.fillText(line.txt, line.pos.x, line.pos.y)
+            line.width = textWidth
+            line.height = line.size
 
             if (idx === meme.selectedLineIdx) {
                 let rectX
                 if (line.align === 'left') rectX = line.pos.x - 10
-                else if (line.align === 'right') rectX = line.pos.x - line.width - 10
-                else rectX = line.pos.x - line.width / 2 - 10
+                else if (line.align === 'right') rectX = line.pos.x - textWidth - 10
+                else rectX = line.pos.x - textWidth / 2 - 10
 
                 ctx.strokeStyle = 'white'
                 ctx.lineWidth = 2
                 ctx.strokeRect(
                     rectX,
                     line.pos.y - line.size,
-                    line.width + 20,
-                    line.height + 10
+                    textWidth + 20,
+                    line.size + 10
                 )
             }
         })
@@ -118,6 +102,14 @@ function onImgSelect(imgId) {
     }
 }
 
+function onUserImgSelect(src) {
+    setImg(src)
+    renderMeme()
+    document.querySelector('.gallery').classList.add('hidden')
+    document.querySelector('.editor').classList.remove('hidden')
+    gIsEditorOpen = true
+}
+
 function onBackToGallery() {
     document.querySelector('.editor').classList.add('hidden')
     document.querySelector('.gallery').classList.remove('hidden')
@@ -129,7 +121,6 @@ function onDownloadMeme() {
     const selectedIdx = meme.selectedLineIdx
     meme.selectedLineIdx = -1
     renderMeme()
-
     setTimeout(() => {
         const canvas = document.getElementById('meme-canvas')
         const link = document.createElement('a')
@@ -212,18 +203,12 @@ function getLineClicked(pos) {
         const line = meme.lines[i]
         const top = line.pos.y - line.size
         const bottom = top + line.height
-
         let rectX
         if (line.align === 'left') rectX = line.pos.x - 10
         else if (line.align === 'right') rectX = line.pos.x - line.width - 10
         else rectX = line.pos.x - line.width / 2 - 10
-
         const right = rectX + line.width + 20
-
-        if (
-            pos.x >= rectX && pos.x <= right &&
-            pos.y >= top && pos.y <= bottom
-        ) {
+        if (pos.x >= rectX && pos.x <= right && pos.y >= top && pos.y <= bottom) {
             return i
         }
     }
@@ -243,10 +228,8 @@ function onFlexibleMeme() {
         { id: 25, txt: "Me showing up to the hospital still in my pajamas in the morning." },
         { id: 12, txt: "Guess who's looking at this meme now?" }
     ]
-
     const random = options[Math.floor(Math.random() * options.length)]
     setImg(random.id)
-
     gMeme.lines = [{
         txt: random.txt,
         size: 30,
@@ -258,7 +241,6 @@ function onFlexibleMeme() {
         height: 0
     }]
     gMeme.selectedLineIdx = 0
-
     renderMeme()
     if (!gIsEditorOpen) {
         document.querySelector('.gallery').classList.add('hidden')
@@ -271,24 +253,22 @@ function renderSavedMemes() {
     const memes = getSavedMemes()
     const elList = document.querySelector('.saved-list')
     const elSection = document.querySelector('.saved-memes')
-
     if (!memes.length) {
         elSection.classList.add('hidden')
         return
     }
-
     elSection.classList.remove('hidden')
     elList.innerHTML = ''
-
-    memes.forEach(meme => {
+    memes.forEach((meme, idx) => {
+        const container = document.createElement('div')
+        container.classList.add('saved-meme')
         const canvas = document.createElement('canvas')
         canvas.width = 100
         canvas.height = 100
         const ctx = canvas.getContext('2d')
-
         const img = new Image()
-        img.src = `gallery/${meme.selectedImgId}.jpg`
-
+        img.src = meme.selectedImgId
+        if (!img.src.startsWith('data')) img.src = `gallery/${meme.selectedImgId}.jpg`
         img.onload = () => {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
             meme.lines.forEach(line => {
@@ -298,7 +278,6 @@ function renderSavedMemes() {
                 ctx.fillText(line.txt, canvas.width / 2, 20 + 20 * meme.lines.indexOf(line))
             })
         }
-
         canvas.addEventListener('click', () => {
             gMeme = structuredClone(meme)
             renderMeme()
@@ -306,8 +285,18 @@ function renderSavedMemes() {
             document.querySelector('.editor').classList.remove('hidden')
             gIsEditorOpen = true
         })
-
-        elList.appendChild(canvas)
+        const btnDelete = document.createElement('button')
+        btnDelete.classList.add('delete-meme-btn')
+        btnDelete.innerHTML = '<img src="icon-gallery/trash.png" alt="Delete">'
+        btnDelete.onclick = () => {
+            const memes = getSavedMemes()
+            memes.splice(idx, 1)
+            saveToStorage('saved-memes', memes)
+            renderSavedMemes()
+        }
+        container.appendChild(canvas)
+        container.appendChild(btnDelete)
+        elList.appendChild(container)
     })
 }
 
@@ -346,6 +335,13 @@ document.getElementById('filter-input').addEventListener('input', ev => {
 document.getElementById('btn-clear-filter').addEventListener('click', () => {
     document.getElementById('filter-input').value = ''
     renderGallery()
+})
+document.querySelectorAll('.sticker-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        addLine()
+        setLineTxt(btn.textContent)
+        renderMeme()
+    })
 })
 
 const canvas = document.getElementById('meme-canvas')

@@ -10,6 +10,9 @@ header {
     background: linear-gradient(to right, orange, orangered);
     padding: 20px;
     color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 main {
@@ -25,6 +28,27 @@ main {
     gap: 10px;
     justify-content: center;
     margin-bottom: 10px;
+}
+
+.tag-cloud {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-right: 20px;
+}
+
+.tag-cloud button {
+    background: none;
+    border: none;
+    color: rgb(255, 255, 255);
+    cursor: pointer;
+    padding: 4px 6px;
+    transition: transform 0.2s;
+}
+
+.tag-cloud button:hover {
+    transform: scale(1.1);
 }
 
 .gallery {
@@ -126,6 +150,27 @@ button {
     max-width: 400px;
 }
 
+.file-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.sticker-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.sticker-button {
+    background-color: #444;
+    border: none;
+    border-radius: 5px;
+    font-size: 20px;
+    padding: 8px;
+    cursor: pointer;
+}
+
 .saved-memes {
     padding: 20px;
     background-color: #222;
@@ -151,6 +196,27 @@ button {
 
 .hidden {
     display: none;
+}
+
+button img {
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+}
+
+.align-controls button,
+.line-controls button,
+#btn-save,
+#btn-download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    width: 48px;
+    height: 48px;
+    background-color: darkslategray;
+    border: none;
+    border-radius: 5px;
 }
 
 @media (max-width: 600px) {

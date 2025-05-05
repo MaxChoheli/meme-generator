@@ -8,8 +8,12 @@
 </head>
 
 <body>
-    <header>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
         <h1 style="text-align: left;">Meme Generator</h1>
+        <div>
+            <button id="btn-toggle-tags">Toggle Tags</button>
+            <div class="tag-cloud hidden" id="tag-cloud"></div>
+        </div>
     </header>
 
     <main>
@@ -31,6 +35,7 @@
                 <option value="padme">
             </datalist>
             <button id="btn-clear-filter">Clear Filter</button>
+            <input type="file" id="user-img-input" accept="image/*">
         </section>
 
         <section class="gallery"></section>
@@ -52,10 +57,18 @@
                 <option value="Times New Roman">Times</option>
             </select>
 
+            <div class="sticker-bar">
+                <button class="sticker-button">😜</button>
+                <button class="sticker-button">😍</button>
+                <button class="sticker-button">😂</button>
+                <button class="sticker-button">🔥</button>
+                <button class="sticker-button">💀</button>
+            </div>
+
             <div class="align-controls">
-                <button data-align="left">Left</button>
-                <button data-align="center">Center</button>
-                <button data-align="right">Right</button>
+                <button data-align="left"><img src="icon-gallery/left-align.png" alt="Align Left"></button>
+                <button data-align="center"><img src="icon-gallery/center-align.png" alt="Align Center"></button>
+                <button data-align="right"><img src="icon-gallery/right-align.png" alt="Align Right"></button>
             </div>
 
             <div class="font-size-controls">
@@ -64,14 +77,17 @@
             </div>
 
             <div class="line-controls">
-                <button id="btn-add-line">Add Line</button>
-                <button id="btn-switch-line">Switch Line</button>
-                <button id="btn-remove-line">Remove Line</button>
+                <button id="btn-add-line"><img src="icon-gallery/add-text.png" alt="Add Line"></button>
+                <button id="btn-switch-line"><img src="icon-gallery/switch.png" alt="Switch Line"></button>
+                <button id="btn-remove-line"><img src="icon-gallery/trash.png" alt="Remove Line"></button>
             </div>
 
-            <button id="btn-save">Save Meme</button>
-            <button id="btn-download">Download Meme</button>
-            <button id="btn-back">Back to Gallery</button>
+            <div class="file-controls">
+                <button id="btn-save"><img src="icon-gallery/save.png" alt="Save Meme"></button>
+                <button id="btn-download"><img src="icon-gallery/download.png" alt="Download Meme"></button>
+            </div>
+
+            <button id="btn-back"><img src="icon-gallery/return.png" alt="Back to Gallery"></button>
         </section>
 
         <section class="saved-memes hidden">
@@ -83,6 +99,12 @@
     <script src="js/meme-service.js"></script>
     <script src="js/gallery-controller.js"></script>
     <script src="js/meme-controller.js"></script>
+
+    <script>
+        document.getElementById('btn-toggle-tags').addEventListener('click', () => {
+            document.getElementById('tag-cloud').classList.toggle('hidden')
+        })
+    </script>
 </body>
 
 </html>

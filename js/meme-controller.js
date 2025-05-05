@@ -14,13 +14,13 @@ function renderMeme() {
     img.src = isUserImg ? meme.selectedImgId : `gallery/${meme.selectedImgId}.jpg`
 
     img.onload = () => {
-        const fixedCanvasWidth = 400
-        canvas.width = fixedCanvasWidth
-        canvas.height = (img.height * fixedCanvasWidth) / img.width
+        canvas.width = img.width > 600 ? 600 : img.width
+        canvas.height = (img.height * canvas.width) / img.width
 
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
 
         meme.lines.forEach((line, idx) => {
+            ctx.save()
             ctx.font = `${line.size}px ${line.font}`
             ctx.fillStyle = line.color
             ctx.textAlign = line.align
@@ -29,25 +29,22 @@ function renderMeme() {
             if (!line.pos.y) line.pos.y = 50 + idx * 50
 
             const textWidth = ctx.measureText(line.txt).width
-            ctx.fillText(line.txt, line.pos.x, line.pos.y)
             line.width = textWidth
             line.height = line.size
 
-            if (idx === meme.selectedLineIdx) {
-                let rectX
-                if (line.align === 'left') rectX = line.pos.x - 10
-                else if (line.align === 'right') rectX = line.pos.x - textWidth - 10
-                else rectX = line.pos.x - textWidth / 2 - 10
+            ctx.translate(line.pos.x, line.pos.y)
+            ctx.rotate((line.angle || 0) * Math.PI / 180)
+            ctx.fillText(line.txt, 0, 0)
 
+            if (idx === meme.selectedLineIdx) {
+                const padding = 10
+                const xOffset = line.align === 'left' ? 0 : line.align === 'right' ? -line.width : -line.width / 2
                 ctx.strokeStyle = 'white'
                 ctx.lineWidth = 2
-                ctx.strokeRect(
-                    rectX,
-                    line.pos.y - line.size,
-                    textWidth + 20,
-                    line.size + 10
-                )
+                ctx.strokeRect(xOffset - padding, -line.size, line.width + padding * 2, line.height + 10)
             }
+
+            ctx.restore()
         })
     }
 }
@@ -69,6 +66,17 @@ function onIncreaseFont() {
 
 function onDecreaseFont() {
     changeFontSize(-2)
+    renderMeme()
+}
+
+function onRotateLine() {
+    const line = getMeme().lines[getMeme().selectedLineIdx]
+    line.angle = (line.angle || 0) + 15
+    renderMeme()
+}
+
+function onResizeLine(diff) {
+    changeFontSize(diff)
     renderMeme()
 }
 
@@ -95,16 +103,16 @@ function onRemoveLine() {
 function onImgSelect(imgId) {
     setImg(imgId)
     renderMeme()
-    if (!gIsEditorOpen) {
-        document.querySelector('.gallery').classList.add('hidden')
-        document.querySelector('.editor').classList.remove('hidden')
-        gIsEditorOpen = true
-    }
+    openEditor()
 }
 
 function onUserImgSelect(src) {
     setImg(src)
     renderMeme()
+    openEditor()
+}
+
+function openEditor() {
     document.querySelector('.gallery').classList.add('hidden')
     document.querySelector('.editor').classList.remove('hidden')
     gIsEditorOpen = true
@@ -137,27 +145,31 @@ function onCanvasClick(ev) {
     const clickedLineIdx = getLineClicked(pos)
     if (clickedLineIdx !== -1) {
         gMeme.selectedLineIdx = clickedLineIdx
-        document.getElementById('txt-input').value = gMeme.lines[clickedLineIdx].txt
+        const elInput = document.getElementById('txt-input')
+        elInput.value = gMeme.lines[clickedLineIdx].txt
+        elInput.focus()
         renderMeme()
+    }
+}
+
+function onCanvasDblClick(ev) {
+    const pos = getEvPos(ev)
+    const clickedLineIdx = getLineClicked(pos)
+    if (clickedLineIdx !== -1) {
+        gMeme.selectedLineIdx = clickedLineIdx
+        const elInput = document.getElementById('txt-input')
+        elInput.value = gMeme.lines[clickedLineIdx].txt
+        elInput.focus()
     }
 }
 
 function onKeyMove(ev) {
     switch (ev.key) {
-        case 'ArrowUp':
-            moveLine(0, -10)
-            break
-        case 'ArrowDown':
-            moveLine(0, 10)
-            break
-        case 'ArrowLeft':
-            moveLine(-10, 0)
-            break
-        case 'ArrowRight':
-            moveLine(10, 0)
-            break
-        default:
-            return
+        case 'ArrowUp': moveLine(0, -10); break
+        case 'ArrowDown': moveLine(0, 10); break
+        case 'ArrowLeft': moveLine(-10, 0); break
+        case 'ArrowRight': moveLine(10, 0); break
+        default: return
     }
     renderMeme()
 }
@@ -191,9 +203,12 @@ function onStopDrag() {
 function getEvPos(ev) {
     const canvas = document.getElementById('meme-canvas')
     const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+
     return {
-        x: ev.clientX - rect.left,
-        y: ev.clientY - rect.top
+        x: (ev.clientX - rect.left) * scaleX,
+        y: (ev.clientY - rect.top) * scaleY
     }
 }
 
@@ -208,9 +223,7 @@ function getLineClicked(pos) {
         else if (line.align === 'right') rectX = line.pos.x - line.width - 10
         else rectX = line.pos.x - line.width / 2 - 10
         const right = rectX + line.width + 20
-        if (pos.x >= rectX && pos.x <= right && pos.y >= top && pos.y <= bottom) {
-            return i
-        }
+        if (pos.x >= rectX && pos.x <= right && pos.y >= top && pos.y <= bottom) return i
     }
     return -1
 }
@@ -242,74 +255,105 @@ function onFlexibleMeme() {
     }]
     gMeme.selectedLineIdx = 0
     renderMeme()
-    if (!gIsEditorOpen) {
-        document.querySelector('.gallery').classList.add('hidden')
-        document.querySelector('.editor').classList.remove('hidden')
-        gIsEditorOpen = true
-    }
+    openEditor()
+}
+function saveMeme() {
+    const meme = structuredClone(getMeme())
+    const canvas = document.getElementById('meme-canvas')
+    meme.imgDataUrl = canvas.toDataURL('image/jpeg')
+
+    const savedMemes = loadFromStorage('saved-memes') || []
+    savedMemes.push(meme)
+    saveToStorage('saved-memes', savedMemes)
 }
 
 function renderSavedMemes() {
-    const memes = getSavedMemes()
+    const memes = loadFromStorage('saved-memes') || []
     const elList = document.querySelector('.saved-list')
     const elSection = document.querySelector('.saved-memes')
+
     if (!memes.length) {
         elSection.classList.add('hidden')
         return
     }
+
     elSection.classList.remove('hidden')
     elList.innerHTML = ''
+
     memes.forEach((meme, idx) => {
         const container = document.createElement('div')
         container.classList.add('saved-meme')
-        const canvas = document.createElement('canvas')
-        canvas.width = 100
-        canvas.height = 100
-        const ctx = canvas.getContext('2d')
+
         const img = new Image()
-        img.src = meme.selectedImgId
-        if (!img.src.startsWith('data')) img.src = `gallery/${meme.selectedImgId}.jpg`
+        img.src = meme.imgDataUrl
         img.onload = () => {
+            const canvas = document.createElement('canvas')
+            canvas.width = 100
+            canvas.height = 100
+            const ctx = canvas.getContext('2d')
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-            meme.lines.forEach(line => {
-                ctx.font = '12px Impact'
-                ctx.fillStyle = 'white'
-                ctx.textAlign = 'center'
-                ctx.fillText(line.txt, canvas.width / 2, 20 + 20 * meme.lines.indexOf(line))
+            canvas.addEventListener('click', () => {
+                gMeme = structuredClone(meme)
+                renderMeme()
+                openEditor()
             })
+            container.appendChild(canvas)
         }
-        canvas.addEventListener('click', () => {
-            gMeme = structuredClone(meme)
-            renderMeme()
-            document.querySelector('.gallery').classList.add('hidden')
-            document.querySelector('.editor').classList.remove('hidden')
-            gIsEditorOpen = true
-        })
+
         const btnDelete = document.createElement('button')
         btnDelete.classList.add('delete-meme-btn')
         btnDelete.innerHTML = '<img src="icon-gallery/trash.png" alt="Delete">'
         btnDelete.onclick = () => {
-            const memes = getSavedMemes()
             memes.splice(idx, 1)
             saveToStorage('saved-memes', memes)
             renderSavedMemes()
         }
-        container.appendChild(canvas)
+
         container.appendChild(btnDelete)
         elList.appendChild(container)
     })
 }
 
-renderGallery()
-renderMeme()
-renderSavedMemes()
+function saveToStorage(key, val) {
+    localStorage.setItem(key, JSON.stringify(val))
+}
+
+function loadFromStorage(key) {
+    const val = localStorage.getItem(key)
+    return val ? JSON.parse(val) : null
+}
+
+document.getElementById('btn-save').addEventListener('click', () => {
+    saveMeme()
+    renderSavedMemes()
+})
+
+async function onShareMeme() {
+    const canvas = document.getElementById('meme-canvas')
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+    const file = new File([blob], 'meme.png', { type: 'image/png' })
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({
+                title: 'Check out my meme!',
+                files: [file]
+            })
+        } catch (err) {
+            console.error('Share canceled or failed', err)
+        }
+    } else {
+        alert('Sharing not supported on this device or browser.')
+    }
+}
 
 document.getElementById('txt-input').addEventListener('input', onTxtInput)
+document.getElementById('btn-share').addEventListener('click', onShareMeme)
 document.getElementById('btn-back').addEventListener('click', onBackToGallery)
 document.getElementById('btn-download').addEventListener('click', onDownloadMeme)
 document.getElementById('color-picker').addEventListener('input', onColorChange)
-document.getElementById('btn-increase-font').addEventListener('click', onIncreaseFont)
-document.getElementById('btn-decrease-font').addEventListener('click', onDecreaseFont)
+document.getElementById('btn-increase-font').addEventListener('click', () => onResizeLine(2))
+document.getElementById('btn-decrease-font').addEventListener('click', () => onResizeLine(-2))
 document.getElementById('btn-add-line').addEventListener('click', onAddLine)
 document.getElementById('btn-switch-line').addEventListener('click', onSwitchLine)
 document.getElementById('btn-remove-line').addEventListener('click', onRemoveLine)
@@ -323,19 +367,6 @@ document.querySelectorAll('.align-controls button').forEach(btn => {
         renderMeme()
     })
 })
-document.addEventListener('keydown', onKeyMove)
-document.getElementById('btn-flexible').addEventListener('click', onFlexibleMeme)
-document.getElementById('btn-save').addEventListener('click', () => {
-    saveMeme()
-    renderSavedMemes()
-})
-document.getElementById('filter-input').addEventListener('input', ev => {
-    renderGallery(ev.target.value)
-})
-document.getElementById('btn-clear-filter').addEventListener('click', () => {
-    document.getElementById('filter-input').value = ''
-    renderGallery()
-})
 document.querySelectorAll('.sticker-button').forEach(btn => {
     btn.addEventListener('click', () => {
         addLine()
@@ -343,8 +374,24 @@ document.querySelectorAll('.sticker-button').forEach(btn => {
         renderMeme()
     })
 })
+document.addEventListener('keydown', onKeyMove)
+document.getElementById('btn-flexible').addEventListener('click', onFlexibleMeme)
+
+document.getElementById('filter-input').addEventListener('input', ev => {
+    renderGallery(ev.target.value)
+})
+document.getElementById('btn-clear-filter').addEventListener('click', () => {
+    document.getElementById('filter-input').value = ''
+    renderGallery()
+})
+document.getElementById('btn-rotate-line')?.addEventListener('click', onRotateLine)
 
 const canvas = document.getElementById('meme-canvas')
 canvas.addEventListener('mousedown', onStartDrag)
 canvas.addEventListener('mousemove', onMoveDrag)
 canvas.addEventListener('mouseup', onStopDrag)
+canvas.addEventListener('dblclick', onCanvasDblClick)
+
+renderGallery()
+renderMeme()
+renderSavedMemes()

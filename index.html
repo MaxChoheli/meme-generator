@@ -8,11 +8,11 @@
 </head>
 
 <body>
-    <header style="display: flex; justify-content: space-between; align-items: center;">
+    <header>
         <h1 style="text-align: left;">Meme Generator</h1>
-        <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
             <button id="btn-toggle-tags">Toggle Tags</button>
-            <div class="tag-cloud hidden" id="tag-cloud"></div>
+            <div class="tag-cloud"></div>
         </div>
     </header>
 
@@ -74,6 +74,7 @@
             <div class="font-size-controls">
                 <button id="btn-increase-font">A+</button>
                 <button id="btn-decrease-font">A-</button>
+                <button id="btn-rotate-line">🔄</button>
             </div>
 
             <div class="line-controls">
@@ -84,6 +85,7 @@
 
             <div class="file-controls">
                 <button id="btn-save"><img src="icon-gallery/save.png" alt="Save Meme"></button>
+                <button id="btn-share"><img src="icon-gallery/share.png" alt="Share Meme"></button>
                 <button id="btn-download"><img src="icon-gallery/download.png" alt="Download Meme"></button>
             </div>
 
@@ -99,12 +101,6 @@
     <script src="js/meme-service.js"></script>
     <script src="js/gallery-controller.js"></script>
     <script src="js/meme-controller.js"></script>
-
-    <script>
-        document.getElementById('btn-toggle-tags').addEventListener('click', () => {
-            document.getElementById('tag-cloud').classList.toggle('hidden')
-        })
-    </script>
 </body>
 
 </html>

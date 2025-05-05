@@ -12,7 +12,8 @@ var gMeme = {
             align: 'center',
             pos: { x: 0, y: 50 },
             width: 0,
-            height: 0
+            height: 0,
+            rotate: 0
         },
         {
             txt: 'Bottom Text',
@@ -22,7 +23,8 @@ var gMeme = {
             align: 'center',
             pos: { x: 0, y: 0 },
             width: 0,
-            height: 0
+            height: 0,
+            rotate: 0
         }
     ]
 }
@@ -56,7 +58,8 @@ function addLine() {
         align: 'center',
         pos: { x: 0, y: 0 },
         width: 0,
-        height: 0
+        height: 0,
+        rotate: 0
     })
     gMeme.selectedLineIdx = gMeme.lines.length - 1
 }
@@ -86,8 +89,31 @@ function moveLine(dx, dy) {
     line.pos.y += dy
 }
 
+function rotateLine(deg) {
+    gMeme.lines[gMeme.selectedLineIdx].rotate += deg
+}
+
 function saveMeme() {
-    const meme = structuredClone(getMeme())
+    const memeCopy = structuredClone(gMeme)
+
+    if (typeof memeCopy.selectedImgId === 'string' && memeCopy.selectedImgId.startsWith('user-')) {
+        const img = new Image()
+        img.src = memeCopy.selectedImgId
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        img.onload = () => {
+            canvas.width = img.width
+            canvas.height = img.height
+            ctx.drawImage(img, 0, 0)
+            memeCopy.selectedImgId = canvas.toDataURL('image/jpeg')
+            persistMeme(memeCopy)
+        }
+    } else {
+        persistMeme(memeCopy)
+    }
+}
+
+function persistMeme(meme) {
     const memes = loadFromStorage('saved-memes') || []
     memes.push(meme)
     saveToStorage('saved-memes', memes)

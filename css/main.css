@@ -238,3 +238,21 @@ button img {
         height: 140px;
     }
 }
+
+#btn-share {
+    background-color: darkslategray;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#btn-share img {
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+}

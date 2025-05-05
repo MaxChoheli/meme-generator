@@ -391,6 +391,13 @@ canvas.addEventListener('mousedown', onStartDrag)
 canvas.addEventListener('mousemove', onMoveDrag)
 canvas.addEventListener('mouseup', onStopDrag)
 canvas.addEventListener('dblclick', onCanvasDblClick)
+canvas.addEventListener('touchstart', ev => onStartDrag(ev.touches[0]))
+canvas.addEventListener('touchmove', ev => {
+    ev.preventDefault()
+    onMoveDrag(ev.touches[0])
+}, { passive: false })
+canvas.addEventListener('touchend', onStopDrag)
+
 
 renderGallery()
 renderMeme()
